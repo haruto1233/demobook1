@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カスタムブックジェネレーター</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1d1f21, #3a3d40);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #00d1ff;
+            text-shadow: 0 0 15px #00d1ff, 0 0 30px #00d1ff;
+            animation: glow 1.5s infinite alternate;
+            white-space: nowrap; /* タイトルを一行に */
+            overflow: hidden; /* タイトルが画面外にはみ出さない */
+            text-overflow: ellipsis; /* 画面に収まらない部分は...に */
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 15px #00d1ff, 0 0 30px #00d1ff;
+            }
+            to {
+                text-shadow: 0 0 25px #00ffea, 0 0 50px #00ffea;
+            }
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #00d1ff;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        input, textarea, select {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        button {
+            background: #00d1ff;
+            color: #1d1f21;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #00ffea;
+            transform: scale(1.05);
+        }
+
+        #output {
+            margin-top: 20px;
+            display: none;
+        }
+
+        #output textarea {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            border: 1px solid #00d1ff;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: #00d1ff;
+            color: #1d1f21;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* ChatGPTボタンのスタイル */
+        #chatgpt-button {
+            background: linear-gradient(45deg, #ff007f, #7f00ff, #00ff7f, #ff007f);
+            background-size: 400% 400%;
+            animation: rainbow 3s ease infinite;
+            border: none;
+            color: #fff;
+            padding: 15px 25px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #chatgpt-button:hover {
+            transform: scale(1.05);
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 50% 0%; }
+            50% { background-position: 100% 50%; }
+            75% { background-position: 50% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+    </style>
+</head>
+<body>
+    <h1>カスタムブックジェネレーター</h1>
+
+    <div class="form-container">
+        <label for="content">本の内容は？</label>
+        <textarea id="content" rows="3" placeholder="本の内容を入力してください"></textarea>
+
+        <label for="difficulty">本の難易度は？（学生レベル、社会人レベル、お年寄りレベル）</label>
+        <select id="difficulty">
+            <option value="学生レベル">学生レベル</option>
+            <option value="社会人レベル">社会人レベル</option>
+            <option value="お年寄りレベル">お年寄りレベル</option>
+        </select>
+
+        <label for="chapters">目次の多さは？（少なめ、普通、多め）</label>
+        <select id="chapters">
+            <option value="少なめ">少なめ</option>
+            <option value="普通">普通</option>
+            <option value="多め">多め</option>
+        </select>
+
+        <button id="generate">プロンプト作成</button>
+    </div>
+
+    <div id="output">
+        <textarea id="generatedPrompt" rows="6" readonly></textarea>
+    </div>
+
+    <div class="popup" id="popup">プロンプトのコピーが完了しました！</div>
+
+    <!-- ChatGPTアプリのボタン -->
+    <button id="chatgpt-button" onclick="window.location.href='https://chat.openai.com'">ChatGPTを開く</button>
+
+    <script>
+        document.getElementById('generate').addEventListener('click', function() {
+            const content = document.getElementById('content').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const chapters = document.getElementById('chapters').value;
+
+            // 固定プロンプト
+            const fixedPrompt = `
+このプロンプトを受け取ったChatGPTはこの情報を元に本の制作を開始してください。
+またユーザーが「次」という事に目次順に章を深堀りしていってください。
+            `.trim();
+
+            // ユーザー入力を結合
+            const prompt = `
+本の内容: ${content}
+本の難易度: ${difficulty}
+目次の多さ: ${chapters}
+${fixedPrompt}
+            `.trim();
+
+            // 出力エリアに表示
+            const outputDiv = document.getElementById('output');
+            const generatedPrompt = document.getElementById('generatedPrompt');
+            generatedPrompt.value = prompt;
+            outputDiv.style.display = 'block';
+
+            // コピー機能
+            generatedPrompt.select();
+            document.execCommand('copy');
+
+            // ポップアップ表示
+            const popup = document.getElementById('popup');
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
