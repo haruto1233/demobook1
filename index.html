@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>カスタムブックジェネレーター</title>
+    <title>カスタムブック</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -20,42 +20,11 @@
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 2em;
             margin-bottom: 20px;
             color: #00d1ff;
-            text-align: center; /* 中央に配置 */
-            animation: glow 1.5s infinite alternate, slideIn 3s steps(30) 1 forwards; /* 最初にだけアニメーション */
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        @keyframes glow {
-            from {
-                text-shadow: 0 0 15px #00d1ff, 0 0 30px #00d1ff;
-            }
-            to {
-                text-shadow: 0 0 25px #00ffea, 0 0 50px #00ffea;
-            }
-        }
-
-        @keyframes slideIn {
-            0% {
-                width: 0%;
-            }
-            100% {
-                width: 100%;
-            }
-        }
-
-        /* タイトルに右から左に光るアニメーションを追加 */
-        @keyframes lightGlow {
-            0% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
         }
 
         .form-container {
@@ -66,18 +35,6 @@
             max-width: 500px;
             width: 90%;
             backdrop-filter: blur(10px);
-            animation: fadeIn 1.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         label {
@@ -137,10 +94,8 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             display: none;
             z-index: 1000;
-            animation: fadeIn 0.5s ease-in-out;
         }
 
-        /* ChatGPTボタンのスタイル */
         #chatgpt-button {
             background: linear-gradient(45deg, #ff007f, #7f00ff, #00ff7f, #ff007f);
             background-size: 400% 400%;
@@ -151,7 +106,6 @@
             font-size: 1.2em;
             border-radius: 30px;
             cursor: pointer;
-            transition: transform 0.3s ease;
         }
 
         #chatgpt-button:hover {
@@ -168,7 +122,7 @@
     </style>
 </head>
 <body>
-    <h1 id="title">カスタムブックジェネレーター</h1>
+    <h1>カスタムブック</h1>
 
     <div class="form-container">
         <label for="content">本の内容は？</label>
@@ -197,29 +151,19 @@
 
     <div class="popup" id="popup">プロンプトのコピーが完了しました！</div>
 
-    <!-- ChatGPTアプリのボタン -->
     <button id="chatgpt-button" onclick="window.location.href='https://chat.openai.com'">ChatGPTを開く</button>
 
     <script>
-        // ページ読み込み時にタイトルのアニメーションを一度だけ実行
-        window.addEventListener('load', function() {
-            document.getElementById('title').style.animation = 'none'; // アニメーションをリセット
-            document.getElementById('title').offsetHeight; // リフローを強制的に発生させて
-            document.getElementById('title').style.animation = 'lightGlow 3s linear infinite'; // 光るアニメーション
-        });
-
         document.getElementById('generate').addEventListener('click', function() {
             const content = document.getElementById('content').value;
             const difficulty = document.getElementById('difficulty').value;
             const chapters = document.getElementById('chapters').value;
 
-            // 固定プロンプト
             const fixedPrompt = `
 このプロンプトを受け取ったChatGPTはこの情報を元に本の制作を開始してください。
 またユーザーが「次」という事に目次順に章を深堀りしていってください。
             `.trim();
 
-            // ユーザー入力を結合
             const prompt = `
 本の内容: ${content}
 本の難易度: ${difficulty}
@@ -227,14 +171,20 @@
 ${fixedPrompt}
             `.trim();
 
-            // 出力エリアに表示
             const outputDiv = document.getElementById('output');
             const generatedPrompt = document.getElementById('generatedPrompt');
             generatedPrompt.value = prompt;
             outputDiv.style.display = 'block';
 
-            // プロンプトコピーのポップアップ
+            generatedPrompt.select();
+            document.execCommand('copy');
+
             const popup = document.getElementById('popup');
             popup.style.display = 'block';
             setTimeout(() => {
-                popup.style.display = 'none
+                popup.style.display = 'none';
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
